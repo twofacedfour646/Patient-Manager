@@ -1,12 +1,14 @@
 "use client";
 import CustomInput from "@/components/CustomInput";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { setCookie } from "@/lib/cookies";
+import { AuthContext } from "./auth/auth_context";
 
 
 export default function Home() {
+  const {login} = useContext(AuthContext)
+
   const [loginData, setLoginData] = useState({
     username: "",
     password: ""
@@ -21,20 +23,9 @@ export default function Home() {
     // Get result from api call
     const result = await axios.post("http://localhost:8080/login", loginData);
 
-    console.log(result);
-
-    if (result.data["new_user"] == true) {
-      // Push user to register page
-      router.push("/register")
-
-    } else if (result.data["jwt"]) {
-      // Set cookie to save user state
-      setCookie("token", result.data["jwt"])
-
-      // Reroute to home screen
-      router.push("/home");
-    } else {
-      alert("Something went wrong")
+    if (result.data["access_jwt"]) {
+      login(result.data["access_jwt"]);
+      router.push("/home")
     }
   }
 

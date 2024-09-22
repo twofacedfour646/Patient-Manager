@@ -18,7 +18,7 @@ type RegisterPayload struct {
 	EmergencyContactName  string `json:"emergencyContactName"`
 	EmergencyContactPhone string `json:"emergencyContactPhone"`
 
-	PrimaryCarePhysician int    `json:"primaryCarePhysician"`
+	PrimaryCarePhysician string `json:"primaryCarePhysician"`
 	InsuranceProvider    string `json:"insuranceProvider"`
 	InsuranceNumber      string `json:"insuranceNumber"`
 	Allergies            string `json:"allergies"`
@@ -48,7 +48,7 @@ type User struct {
 	EmergencyContactName  string `json:"emergencyContactName"`
 	EmergencyContactPhone string `json:"emergencyContactPhone"`
 
-	PrimaryCarePhysician int    `json:"primaryCarePhysician"`
+	PrimaryCarePhysician string `json:"primaryCarePhysician"`
 	InsuranceProvider    string `json:"insuranceProvider"`
 	InsuranceNumber      string `json:"insuranceNumber"`
 	Allergies            string `json:"allergies"`

@@ -1,37 +1,68 @@
 package user
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/twofacedfour646/patient-manager/config"
-	"github.com/twofacedfour646/patient-manager/types"
 )
 
-func generateJwt(userData types.User) (string, error) {
-	// Create a new token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"id":                    userData.Id,
-			"fullName":              userData.FullName,
-			"username":              userData.Username,
-			"email":                 userData.Email,
-			"phoneNumber":           userData.PhoneNumber,
-			"sex":                   userData.Sex,
-			"dateOfBirth":           userData.DateOfBirth,
-			"address":               userData.Address,
-			"occupation":            userData.Occupation,
-			"emergencyContactName":  userData.EmergencyContactName,
-			"emergencyContactPhone": userData.EmergencyContactPhone,
-			"primaryCarePhysician":  userData.PrimaryCarePhysician,
-			"allergies":             userData.Allergies,
-			"currentMedications":    userData.CurrentMedications,
-			"familyHealthHistory":   userData.FamilyHealthHistory,
-			"pastHealthHistory":     userData.PastHealthHistory,
-			"isDoctor":              userData.IsDoctor,
-			"exp":                   time.Now().Add(time.Hour * 24).Unix(),
+type AccessClaims struct {
+	UserID      int    `json:"userID"`
+	FullName    string `json:"fullName"`
+	Username    string `json:"username"`
+	DateOfBirth string `json:"dateOfBirth"`
+	jwt.RegisteredClaims
+}
+
+type RefreshClaims struct {
+	UserID int `json:"userID"`
+	jwt.RegisteredClaims
+}
+
+func generateAccessToken(userID int, fullName string, username string, dateOfBirth string) (string, error) {
+	// Create new claims struct
+	claims := AccessClaims{
+		userID,
+		fullName,
+		username,
+		dateOfBirth,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Subject:   fmt.Sprint(userID),
 		},
-	)
+	}
+
+	// Create a new token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Format secret key
+	secretKey := []byte(config.Envs.JWT_SECRET_KEY)
+
+	// Stringify token
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+func generateRefreshToken(userID int) (string, error) {
+	// Create new claims struct
+	claims := RefreshClaims{
+		userID,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Subject:   fmt.Sprint(userID),
+		},
+	}
+
+	// Create a new token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Format secret key
 	secretKey := []byte(config.Envs.JWT_SECRET_KEY)
